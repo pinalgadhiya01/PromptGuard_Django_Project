@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<h1>My Profile</h1>
+<p class="subtitle">Username: <strong>{{ user.username }}</strong> &nbsp;|&nbsp; Member since {{ user.date_joined|date:"d M Y" }} &nbsp;|&nbsp; Total scans: {{ total_scans }}</p>
+
+<div class="two-col">
+  <div class="card">
+    <h2>Update details</h2>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in user_form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}{{ field.errors }}
+        </div>
+      {% endfor %}
+      {% for field in profile_form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}{{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Save changes</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>My previous security analyses</h2>
+    {% if recent %}
+      <table>
+        <tr><th>Input</th><th>Risk</th></tr>
+        {% for s in recent %}
+        <tr>
+          <td><a href="{% url 'scan_detail' s.pk %}">{{ s.short_text|truncatechars:40 }}</a><br>
+              <span class="muted">{{ s.created_at|date:"d M, h:i A" }}</span></td>
+          <td><span class="badge {{ s.risk_level }}">{{ s.risk_score }}</span></td>
+        </tr>
+        {% endfor %}
+      </table>
+      <p style="margin-top:12px;"><a href="{% url 'history' %}">View full history &rarr;</a></p>
+    {% else %}
+      <p class="empty">You have not scanned anything yet.<br><a href="{% url 'scan_prompt' %}">Scan your first prompt</a></p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

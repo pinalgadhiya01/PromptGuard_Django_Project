@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Scan Result{% endblock %}
+
+{% block content %}
+<h1>Security Analysis Result</h1>
+<p class="subtitle">
+  {{ scan.get_source_type_display }}{% if scan.file_name %} - {{ scan.file_name }}{% endif %}
+  &nbsp;|&nbsp; {{ scan.created_at|date:"d M Y, h:i A" }}
+</p>
+
+<div class="card">
+  <div class="result-head">
+    <div class="score-circle {{ scan.risk_level }}">
+      <span class="num">{{ scan.risk_score }}</span>
+      <span class="of">out of 100</span>
+    </div>
+    <div>
+      <h2 style="margin-bottom:6px;">
+        {% if scan.is_safe %}No threat detected{% else %}{{ scan.category }}{% endif %}
+      </h2>
+      <p style="margin:0 0 6px;">
+        Risk level: <span class="badge {{ scan.risk_level }}">{{ scan.risk_level }}</span>
+        &nbsp;
+        <span class="badge {% if scan.is_safe %}safe{% else %}sus{% endif %}">
+          {% if scan.is_safe %}Safe{% else %}Suspicious{% endif %}
+        </span>
+      </p>
+      <p class="muted" style="margin:0;">ML model confidence: {{ scan.ml_confidence|floatformat:2 }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Analysed text</h2>
+  <div class="prompt-text">{{ scan.input_text|truncatechars:1500 }}</div>
+</div>
+
+<div class="card">
+  <h2>Why was it flagged?</h2>
+  <div class="box {% if scan.is_safe %}good{% else %}warn{% endif %}">{{ scan.explanation }}</div>
+
+  <h3 style="margin-top:18px;">Recommendation</h3>
+  <div class="box">{{ scan.recommendation }}</div>
+</div>
+
+{% if scan.matched_patterns %}
+<div class="card">
+  <h2>Suspicious patterns found</h2>
+  <table>
+    <tr><th>Category</th><th>Matched text</th><th>Indicator</th><th>Severity</th></tr>
+    {% for m in scan.matched_patterns %}
+    <tr>
+      <td>{{ m.category }}</td>
+      <td><code>{{ m.matched_text }}</code></td>
+      <td>{{ m.description }}</td>
+      <td>{{ m.weight }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% if scan.source_type == "document" %}
+<div class="card">
+  <h2>Suspicious content inside the document</h2>
+  {% if findings %}
+    <table>
+      <tr><th>Text found</th><th>Category</th><th>Score</th></tr>
+      {% for f in findings %}
+      <tr>
+        <td>{{ f.snippet }}<br><span class="muted">{{ f.reason }}</span></td>
+        <td>{{ f.category }}</td>
+        <td><span class="badge {{ f.risk_level }}">{{ f.risk_score }}</span></td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p class="empty">No suspicious instructions were found in this document.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="actions">
+  <a class="btn" href="{% url 'download_report' scan.pk %}">Download PDF report</a>
+  <a class="btn btn-outline" href="{% url 'scan_prompt' %}">Scan another prompt</a>
+  <a class="btn btn-outline" href="{% url 'history' %}">Back to history</a>
+</div>
+{% endblock %}

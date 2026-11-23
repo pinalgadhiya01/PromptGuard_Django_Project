@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+
+{% block content %}
+<h1>Scan History</h1>
+<p class="subtitle">All your previous security analyses.</p>
+
+<div class="card">
+  <form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search text...">
+    <select name="level">
+      <option value="">All risk levels</option>
+      {% for l in levels %}
+        <option value="{{ l }}" {% if l == level %}selected{% endif %}>{{ l }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" type="submit">Filter</button>
+  </form>
+
+  {% if page.object_list %}
+  <table>
+    <tr><th>Date</th><th>Type</th><th>Input</th><th>Category</th><th>Score</th><th></th></tr>
+    {% for s in page.object_list %}
+    <tr>
+      <td>{{ s.created_at|date:"d M Y, h:i A" }}</td>
+      <td>{{ s.get_source_type_display }}</td>
+      <td><a href="{% url 'scan_detail' s.pk %}">{{ s.short_text }}</a></td>
+      <td>{{ s.category }}</td>
+      <td><span class="badge {{ s.risk_level }}">{{ s.risk_score }} - {{ s.risk_level }}</span></td>
+      <td>
+        <form method="post" action="{% url 'delete_scan' s.pk %}" onsubmit="return confirm('Delete this scan?');">
+          {% csrf_token %}
+          <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="pagination">
+    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&q={{ q }}&level={{ level }}">&larr; Previous</a>{% endif %}
+    <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a href="?page={{ page.next_page_number }}&q={{ q }}&level={{ level }}">Next &rarr;</a>{% endif %}
+  </div>
+  {% else %}
+    <p class="empty">No scans found. <a href="{% url 'scan_prompt' %}">Scan a prompt</a></p>
+  {% endif %}
+</div>
+{% endblock %}

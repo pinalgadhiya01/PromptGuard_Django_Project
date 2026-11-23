@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Test your AI prompts before attackers do</h1>
+  <p>
+    PromptGuard checks prompts and documents for prompt injection, jailbreaks,
+    system prompt extraction and other attacks on AI applications, and explains
+    exactly why something was flagged.
+  </p>
+  {% if user.is_authenticated %}
+    <a class="btn" href="{% url 'scan_prompt' %}">Scan a prompt</a>
+    <a class="btn btn-outline" href="{% url 'dashboard' %}">Open dashboard</a>
+  {% else %}
+    <a class="btn" href="{% url 'register' %}">Create free account</a>
+    <a class="btn btn-outline" href="{% url 'login' %}">Login</a>
+  {% endif %}
+</section>
+
+<section class="feature-grid" style="margin-top:30px;">
+  <div class="card">
+    <div class="icon">&#128269;</div>
+    <h3>Prompt Scanner</h3>
+    <p class="muted">Checks text for injection, jailbreak, role manipulation, system prompt and data extraction attempts.</p>
+  </div>
+  <div class="card">
+    <div class="icon">&#129504;</div>
+    <h3>ML Detection</h3>
+    <p class="muted">A text classifier (TF-IDF + Logistic Regression) predicts the attack category.</p>
+  </div>
+  <div class="card">
+    <div class="icon">&#128196;</div>
+    <h3>Document Scanner</h3>
+    <p class="muted">Upload a PDF or TXT file to find hidden instructions (indirect prompt injection).</p>
+  </div>
+  <div class="card">
+    <div class="icon">&#128202;</div>
+    <h3>Dashboard &amp; Reports</h3>
+    <p class="muted">See risk statistics and download a PDF security report for every scan.</p>
+  </div>
+</section>
+{% endblock %}
